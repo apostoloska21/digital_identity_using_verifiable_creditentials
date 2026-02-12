@@ -1,0 +1,13 @@
+<!doctype html>
+<html>
+  <body>
+    <h2>Holder Wallet</h2>
+    <p>Stored credentials: {{ vcs|length }}</p>
+    <ol>
+      {% for t in vcs %}
+        <li><code>{{ t[:40] }}...</code></li>
+      {% endfor %}
+    </ol>
+    <p>Use POST /store to store VC, POST /present to create VP.</p>
+  </body>
+</html>
