@@ -17,10 +17,14 @@ def issue():
         "studentId": data["studentId"],
         "fullName": data["fullName"],
         "faculty": data["faculty"],
+        # koga e izdaden
         "iat": now,
+        # istekuvanje /// vaznosta na VCe 1 sat, za da ogranicam validitey period, kratko e zada se testira expiration logikata
         "exp": now + 3600
     }
-
+    # enkodiranje so asimetricna kriptografija so sha256
+    # jwt.encode kreira jwt token tuak so 3 dela(header(alritmot), payload(vc podatocie) i signature(privatniot kluc)
+    # jwt strukturata e to header.payload.signature
     token = jwt.encode(vc_payload, PRIVATE_KEY, algorithm="ES256")
     return jsonify({"vc_jwt": token})
 

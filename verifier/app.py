@@ -6,12 +6,13 @@ app = Flask(__name__)
 ISSUER_PUBLIC = open("issuer_public.pem", "rb").read()
 
 
-NONCES = {}  # nonce -> exp timestamp
+NONCES = {}  # nonce -> exp timestamp, inmemeory storage za aktivni nonces so nivnui exp. time
 
 @app.get("/")
 def index():
     return render_template("index.html")
 
+# random nonce i istekuva za da se sprecat replay napadi
 @app.get("/challenge")
 def challenge():
     ttl = 600
@@ -27,18 +28,19 @@ def verify():
     vp_jwt = data["vp_jwt"]
     holder_public_pem = data["holder_public_key_pem"].encode()
 
-    # 1) verify VP signature (holder)
+    # verifikuvanje VP signature (holder)
     vp = jwt.decode(vp_jwt, holder_public_pem, algorithms=["ES256"])
 
-    # 2) nonce check (anti-replay)
+    # nonce check (anti replay)
     nonce = vp.get("nonce")
     if not nonce or nonce not in NONCES:
         return jsonify({"valid": False, "error": "Missing/unknown nonce"}), 400
     if NONCES[nonce] < int(time.time()):
         return jsonify({"valid": False, "error": "Expired nonce"}), 400
+    # ednokratna upotreba
     del NONCES[nonce]
 
-    # 3) verify embedded VC signature (issuer)
+    # verifying embedded VC signature (issuer potpisal)
     vc_jwt = vp["vc_jwt"]
     vc = jwt.decode(vc_jwt, ISSUER_PUBLIC, algorithms=["ES256"])
 

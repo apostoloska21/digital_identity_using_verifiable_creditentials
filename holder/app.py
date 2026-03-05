@@ -25,6 +25,8 @@ def store():
 
     with open(WALLET_FILE, "r") as f:
         wallet = json.load(f)
+    #     vc se cuva lokalno vo wallet.json
+    #  -- da se abgrejdnte da se cuva sifriran
     wallet["vcs"].append(vc_jwt)
     with open(WALLET_FILE, "w") as f:
         json.dump(wallet, f, indent=2)
@@ -36,7 +38,7 @@ def present():
     data = request.get_json(force=True)
     vc_jwt = data["vc_jwt"]
 
-    # Get challenge (nonce) from verifier
+    # getting challenge (nonce) from verifier
     ch = requests.get("http://127.0.0.1:5004/challenge").json()
     nonce = ch["nonce"]
 
@@ -45,10 +47,13 @@ def present():
         "type": "StudentIDPresentation",
         "vc_jwt": vc_jwt,
         "nonce": nonce,
+        # koga e izdaden
         "iat": now,
+        # koga istekuva (ima 5 min vaznost)
         "exp": now + 300
     }
-
+    # algoritmot e asimetricna kriptografija so sha256
+    # jwt.encode kreira jwt token tuak so 3 dela(header(alritmot), payload(vc podatocie) i signature(privatniot kluc)
     vp_jwt = jwt.encode(vp_payload, HOLDER_PRIVATE, algorithm="ES256")
     return jsonify({"vp_jwt": vp_jwt, "holder_public_key_pem": HOLDER_PUBLIC.decode()})
 
